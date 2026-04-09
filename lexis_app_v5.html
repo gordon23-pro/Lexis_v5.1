@@ -1,0 +1,1030 @@
+<!DOCTYPE html>
+<html lang="mn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Lexis">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#0d0d0f">
+<title>Lexis — Үг цээжлэх</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Sora:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ink:#0d0d0f;--ink2:#17171c;--ink3:#1f1f27;--ink4:#2a2a35;
+  --wire:#2e2e3a;--wire2:#3a3a48;--dim:#52526a;--mid:#8888a8;
+  --pale:#c8c8e0;--snow:#eeeef8;
+  --gold:#f0c060;--gold2:#c89030;
+  --teal:#50c8b0;--rose:#e07080;
+  --lav:#a080e0;--lav2:#7F77DD;--lav3:#534AB7;--lav4:#EEEDFE;
+  --r:14px;--r2:20px;--ease:cubic-bezier(.4,0,.2,1);
+  --safe-top:env(safe-area-inset-top,0px);
+  --safe-bot:env(safe-area-inset-bottom,0px);
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html{scroll-behavior:smooth;touch-action:pan-x pan-y;}
+body{
+  background:var(--ink);color:var(--snow);
+  font-family:'Sora',sans-serif;font-weight:400;
+  min-height:100dvh;overflow-x:hidden;overscroll-behavior:none;
+  touch-action:pan-x pan-y;
+}
+body::before{
+  content:'';position:fixed;inset:0;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events:none;z-index:9999;opacity:.4;
+}
+.glow-orb{position:fixed;border-radius:50%;filter:blur(80px);pointer-events:none;z-index:0;}
+.glow-orb.g1{width:500px;height:500px;background:radial-gradient(circle,rgba(127,119,221,.14),transparent 70%);top:-100px;right:-100px;}
+.glow-orb.g2{width:400px;height:400px;background:radial-gradient(circle,rgba(80,200,176,.08),transparent 70%);bottom:100px;left:-50px;}
+
+.app{position:relative;z-index:1;display:flex;flex-direction:column;height:100dvh;overflow:hidden;}
+
+/* HEADER */
+header{
+  padding:0 20px 12px;
+  padding-top:calc(var(--safe-top) + 12px);
+  display:flex;align-items:flex-end;justify-content:space-between;
+  border-bottom:1px solid var(--wire);
+  background:rgba(13,13,15,.92);
+  backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  z-index:200;flex-shrink:0;
+}
+.brand{font-family:'Playfair Display',serif;font-size:1.5rem;color:var(--snow);letter-spacing:-0.5px;}
+.brand em{color:var(--lav2);font-style:italic;}
+.header-pills{display:flex;gap:8px;align-items:center;}
+.pill{background:var(--ink3);border:1px solid var(--wire);border-radius:100px;padding:5px 12px;font-size:.68rem;color:var(--mid);display:flex;align-items:center;gap:5px;}
+.pill b{color:var(--snow);}
+.pill .dot{width:6px;height:6px;border-radius:50%;background:var(--teal);}
+.pill .dot.off{background:var(--dim);}
+
+/* MAIN SCROLL */
+main{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;}
+.scroll-inner{max-width:640px;width:100%;margin:0 auto;padding:20px 16px calc(80px + var(--safe-bot));}
+
+.view{display:none;animation:revealUp .25s var(--ease);}
+.view.active{display:block;}
+@keyframes revealUp{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:none;}}
+
+.page-head{margin-bottom:24px;}
+.page-title{font-family:'Playfair Display',serif;font-size:1.8rem;color:var(--snow);line-height:1.1;margin-bottom:5px;}
+.page-title em{color:var(--lav2);font-style:italic;}
+.page-sub{font-size:.72rem;color:var(--dim);line-height:1.6;}
+
+/* WORDS */
+.list-controls{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:14px;}
+.search-wrap{flex:1;min-width:140px;position:relative;}
+.search-wrap input{background:var(--ink2);border:1px solid var(--wire);border-radius:12px;color:var(--snow);font-family:'Sora',sans-serif;font-size:.82rem;padding:10px 14px 10px 38px;outline:none;width:100%;transition:.2s;}
+.search-wrap input::placeholder{color:var(--dim);}
+.search-wrap input:focus{border-color:var(--lav2);box-shadow:0 0 0 3px rgba(127,119,221,.12);}
+.search-icon{position:absolute;left:12px;top:50%;transform:translateY(-50%);pointer-events:none;display:flex;}
+.search-icon svg{width:16px;height:16px;stroke:var(--dim);fill:none;stroke-width:2;}
+
+.filter-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;}
+.chip{background:var(--ink2);border:1px solid var(--wire);border-radius:100px;color:var(--dim);font-family:'Sora',sans-serif;font-size:.65rem;font-weight:600;text-transform:uppercase;letter-spacing:.07em;padding:5px 14px;cursor:pointer;transition:.2s;}
+.chip:hover{border-color:var(--wire2);color:var(--pale);}
+.chip.active{background:var(--lav3);border-color:transparent;color:#fff;}
+
+.sort-btn{background:var(--ink2);border:1px solid var(--wire);border-radius:10px;padding:8px 12px;color:var(--dim);font-family:'Sora',sans-serif;font-size:.68rem;font-weight:600;cursor:pointer;transition:.2s;white-space:nowrap;}
+.sort-btn:hover{color:var(--pale);border-color:var(--wire2);}
+
+.word-grid{display:flex;flex-direction:column;gap:5px;}
+.word-card{background:var(--ink2);border:1px solid var(--wire);border-radius:var(--r);padding:14px 16px;display:flex;align-items:flex-start;gap:12px;transition:all .2s var(--ease);position:relative;overflow:hidden;}
+.word-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--wire2);transition:.2s;}
+.word-card:hover{background:var(--ink3);border-color:var(--wire2);}
+.word-card:hover::before{background:var(--lav2);}
+.word-card.is-known::before{background:var(--teal);}
+.word-card.is-fav::before{background:var(--gold);}
+.word-card.is-known.is-fav::before{background:linear-gradient(to bottom,var(--gold) 40%,var(--teal));}
+
+.known-toggle{width:20px;height:20px;border-radius:50%;border:1.5px solid var(--wire2);background:none;cursor:pointer;flex-shrink:0;margin-top:2px;transition:.2s;display:flex;align-items:center;justify-content:center;}
+.known-toggle svg{width:10px;height:10px;stroke:transparent;fill:none;stroke-width:2.5;transition:.2s;}
+.known-toggle:hover{border-color:var(--teal);}
+.known-toggle:hover svg{stroke:var(--teal);}
+.word-card.is-known .known-toggle{background:var(--teal);border-color:var(--teal);}
+.word-card.is-known .known-toggle svg{stroke:#fff;}
+
+.word-body{flex:1;min-width:0;}
+.word-term{font-family:'Playfair Display',serif;font-size:1.1rem;color:var(--snow);margin-bottom:3px;line-height:1.2;}
+.word-def{font-size:.74rem;color:var(--mid);line-height:1.5;}
+.word-eg{font-size:.68rem;color:var(--dim);font-style:italic;line-height:1.5;border-left:2px solid var(--wire2);padding-left:8px;margin-top:6px;}
+.meta-row{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px;}
+.meta-chip{background:var(--ink4);border:1px solid var(--wire);border-radius:100px;font-size:.58rem;font-weight:600;text-transform:uppercase;letter-spacing:.08em;padding:2px 8px;color:var(--dim);}
+.meta-chip.lvl-easy{border-color:rgba(80,200,176,.3);color:var(--teal);}
+.meta-chip.lvl-medium{border-color:rgba(240,192,96,.3);color:var(--gold);}
+.meta-chip.lvl-hard{border-color:rgba(224,112,128,.3);color:var(--rose);}
+.meta-chip.fav-chip{border-color:rgba(240,192,96,.3);color:var(--gold);}
+
+.word-acts{display:flex;gap:3px;flex-direction:column;align-items:center;flex-shrink:0;}
+.ico-btn{background:none;border:none;color:var(--dim);cursor:pointer;padding:5px;border-radius:8px;display:flex;align-items:center;justify-content:center;transition:.2s;}
+.ico-btn svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;}
+.ico-btn:hover{color:var(--pale);background:var(--ink4);}
+.ico-btn.del:hover{color:var(--rose);background:rgba(224,112,128,.1);}
+.ico-btn.fav-on{color:var(--gold);}
+
+.empty-state{text-align:center;padding:64px 24px;animation:revealUp .3s ease;}
+.empty-state .e-icon{margin-bottom:16px;display:flex;justify-content:center;}
+.empty-state .e-icon svg{width:52px;height:52px;stroke:var(--wire2);fill:none;stroke-width:1;}
+.empty-state h3{font-family:'Playfair Display',serif;font-size:1.2rem;color:var(--pale);margin-bottom:8px;}
+.empty-state p{font-size:.74rem;color:var(--dim);line-height:1.7;}
+
+/* ADD */
+.upload-section{margin-bottom:28px;}
+.upload-drop{position:relative;border:1.5px dashed var(--wire2);border-radius:var(--r2);padding:38px 28px;text-align:center;cursor:pointer;transition:all .25s var(--ease);background:linear-gradient(135deg,var(--ink2),var(--ink3));overflow:hidden;}
+.upload-drop::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 50% 0%,rgba(127,119,221,.08),transparent 70%);pointer-events:none;}
+.upload-drop:hover,.upload-drop.drag{border-color:var(--lav2);transform:translateY(-2px);box-shadow:0 16px 48px rgba(0,0,0,.4);}
+.upload-drop input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;}
+.upload-icon-big{width:54px;height:54px;background:rgba(127,119,221,.15);border-radius:16px;display:flex;align-items:center;justify-content:center;margin:0 auto 14px;animation:float 3s ease-in-out infinite;}
+.upload-icon-big svg{width:26px;height:26px;stroke:var(--lav2);fill:none;stroke-width:1.8;}
+@keyframes float{0%,100%{transform:translateY(0);}50%{transform:translateY(-5px);}}
+.upload-cta{font-size:.9rem;font-weight:600;color:var(--snow);margin-bottom:6px;}
+.upload-hint{font-size:.7rem;color:var(--dim);line-height:1.7;}
+.upload-hint b{color:var(--pale);}
+
+.format-guide{margin-top:16px;background:var(--ink2);border:1px solid var(--wire);border-radius:var(--r);overflow:hidden;}
+.guide-header{display:flex;align-items:center;justify-content:space-between;padding:13px 16px;cursor:pointer;border-bottom:1px solid transparent;transition:.2s;}
+.guide-header:hover{background:var(--ink3);}
+.guide-header.open{border-bottom-color:var(--wire);}
+.guide-title{font-size:.76rem;font-weight:600;color:var(--pale);display:flex;align-items:center;gap:7px;}
+.guide-toggle{font-size:.7rem;color:var(--dim);transition:.2s;}
+.guide-header.open .guide-toggle{transform:rotate(180deg);}
+.guide-body{display:none;padding:16px;animation:revealUp .2s ease;}
+.guide-body.open{display:block;}
+.format-row{display:flex;gap:12px;margin-bottom:12px;flex-wrap:wrap;}
+.format-card{flex:1;min-width:180px;background:var(--ink3);border:1px solid var(--wire);border-radius:var(--r);padding:14px;}
+.format-label{display:flex;align-items:center;gap:6px;font-size:.62rem;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--dim);margin-bottom:9px;}
+.format-label .ext{background:var(--ink4);border:1px solid var(--wire2);border-radius:4px;padding:2px 6px;font-size:.58rem;color:var(--pale);}
+.code-block{background:var(--ink);border:1px solid var(--wire);border-radius:8px;padding:10px 12px;font-family:'Courier New',monospace;font-size:.66rem;color:var(--teal);line-height:1.8;white-space:pre;overflow-x:auto;}
+.code-block .cm{color:var(--dim);}
+.code-block .cv{color:var(--gold);}
+.code-block .cs{color:var(--rose);}
+.guide-note{background:rgba(80,200,176,.06);border:1px solid rgba(80,200,176,.2);border-radius:10px;padding:11px 13px;font-size:.7rem;color:var(--mid);line-height:1.6;}
+.guide-note b{color:var(--teal);}
+
+.or-divider{display:flex;align-items:center;gap:12px;margin:20px 0;color:var(--dim);font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;}
+.or-divider::before,.or-divider::after{content:'';flex:1;height:1px;background:var(--wire);}
+
+.add-form{background:var(--ink2);border:1px solid var(--wire);border-radius:var(--r2);padding:20px;display:flex;flex-direction:column;gap:14px;}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+@media(max-width:500px){.form-grid{grid-template-columns:1fr;}}
+.field{display:flex;flex-direction:column;gap:6px;}
+.field.full{grid-column:1/-1;}
+.field label{font-size:.62rem;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--dim);}
+.field label span{color:var(--rose);margin-left:2px;}
+.field input,.field textarea,.field select{background:var(--ink3);border:1px solid var(--wire);border-radius:10px;color:var(--snow);font-family:'Sora',sans-serif;font-size:.82rem;padding:11px 13px;outline:none;transition:all .2s var(--ease);width:100%;}
+.field input::placeholder,.field textarea::placeholder{color:var(--dim);}
+.field input:focus,.field textarea:focus,.field select:focus{border-color:var(--lav2);box-shadow:0 0 0 3px rgba(127,119,221,.12);}
+.field textarea{resize:vertical;min-height:68px;line-height:1.5;}
+.field select option{background:var(--ink3);color:var(--snow);}
+.form-footer{display:flex;gap:10px;justify-content:flex-end;}
+
+.btn{display:inline-flex;align-items:center;gap:6px;border:none;border-radius:10px;font-family:'Sora',sans-serif;font-size:.78rem;font-weight:600;padding:11px 20px;cursor:pointer;transition:all .2s var(--ease);white-space:nowrap;}
+.btn-primary{background:var(--lav2);color:#fff;}
+.btn-primary:hover{background:var(--lav3);transform:translateY(-1px);box-shadow:0 6px 20px rgba(127,119,221,.35);}
+.btn-ghost{background:var(--ink3);color:var(--pale);border:1px solid var(--wire);}
+.btn-ghost:hover{background:var(--ink4);border-color:var(--wire2);}
+.btn-danger{background:rgba(224,112,128,.1);color:var(--rose);border:1px solid rgba(224,112,128,.2);}
+.btn-danger:hover{background:rgba(224,112,128,.2);}
+.btn-teal{background:rgba(80,200,176,.12);color:var(--teal);border:1px solid rgba(80,200,176,.2);}
+.btn-teal:hover{background:rgba(80,200,176,.2);}
+.btn-sm{padding:7px 14px;font-size:.7rem;}
+
+/* STUDY */
+.study-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;gap:12px;}
+.study-progress-wrap{flex:1;display:flex;flex-direction:column;gap:5px;}
+.study-progress-bar{height:3px;background:var(--wire);border-radius:100px;overflow:hidden;}
+.study-progress-fill{height:100%;background:linear-gradient(90deg,var(--lav2),var(--teal));border-radius:100px;transition:width .4s var(--ease);}
+.study-label{font-size:.64rem;color:var(--dim);}
+.card-arena{perspective:1200px;margin-bottom:20px;cursor:pointer;}
+.card-3d{position:relative;width:100%;height:240px;transform-style:preserve-3d;transition:transform .5s cubic-bezier(.4,0,.15,1);}
+.card-3d.flipped{transform:rotateY(180deg);}
+.c-face{position:absolute;inset:0;backface-visibility:hidden;border-radius:var(--r2);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px;text-align:center;border:1px solid var(--wire);}
+.c-face.front{background:linear-gradient(145deg,var(--ink2),var(--ink3));}
+.c-face.front::after{content:'';position:absolute;inset:0;border-radius:var(--r2);background:radial-gradient(ellipse at 30% 20%,rgba(127,119,221,.08),transparent 60%);pointer-events:none;}
+.c-face.back{transform:rotateY(180deg);background:linear-gradient(145deg,#191926,#20202e);}
+.c-tap-hint{position:absolute;top:14px;right:16px;font-size:.6rem;color:var(--dim);display:flex;align-items:center;gap:4px;}
+.c-tap-hint::before{content:'↩';}
+.c-category{font-size:.6rem;font-weight:600;text-transform:uppercase;letter-spacing:.12em;color:var(--lav2);margin-bottom:10px;}
+.c-word{font-family:'Playfair Display',serif;font-size:2.4rem;color:var(--snow);line-height:1;margin-bottom:8px;}
+.c-phonetic{font-size:.78rem;color:var(--dim);font-style:italic;}
+.c-def{font-size:.9rem;color:var(--pale);line-height:1.6;margin-bottom:10px;}
+.c-eg{font-size:.73rem;color:var(--dim);font-style:italic;line-height:1.5;border-top:1px solid var(--wire);padding-top:12px;margin-top:4px;}
+.answer-row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;}
+.btn-wrong{background:rgba(224,112,128,.12);color:var(--rose);border:1px solid rgba(224,112,128,.3);}
+.btn-wrong:hover{background:rgba(224,112,128,.25);transform:translateY(-1px);}
+.btn-right{background:rgba(80,200,176,.12);color:var(--teal);border:1px solid rgba(80,200,176,.3);}
+.btn-right:hover{background:rgba(80,200,176,.25);transform:translateY(-1px);}
+.card-mode-select{display:flex;gap:8px;justify-content:center;margin-bottom:18px;flex-wrap:wrap;}
+.mode-btn{background:var(--ink2);border:1px solid var(--wire);border-radius:100px;color:var(--dim);font-family:'Sora',sans-serif;font-size:.64rem;font-weight:600;padding:6px 14px;cursor:pointer;transition:.2s;}
+.mode-btn:hover{color:var(--pale);}
+.mode-btn.active{background:var(--lav3);border-color:var(--lav2);color:#fff;}
+.flip-prompt{position:absolute;bottom:14px;left:50%;transform:translateX(-50%);font-size:.6rem;color:var(--dim);display:flex;align-items:center;gap:4px;animation:pulse 2s ease-in-out infinite;white-space:nowrap;}
+@keyframes pulse{0%,100%{opacity:.4;}50%{opacity:1;}}
+
+.study-done{text-align:center;padding:60px 20px;}
+.done-circle{width:72px;height:72px;background:rgba(127,119,221,.15);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 18px;}
+.done-circle svg{width:34px;height:34px;stroke:var(--lav2);fill:none;stroke-width:1.8;}
+.study-done h2{font-family:'Playfair Display',serif;font-size:1.8rem;color:var(--snow);margin-bottom:8px;}
+.study-done p{font-size:.76rem;color:var(--dim);line-height:1.7;margin-bottom:20px;}
+.done-stats{display:flex;gap:10px;justify-content:center;margin-bottom:22px;flex-wrap:wrap;}
+.done-stat{background:var(--ink2);border:1px solid var(--wire);border-radius:12px;padding:12px 20px;text-align:center;}
+.done-stat .dn{font-family:'Playfair Display',serif;font-size:1.5rem;color:var(--snow);}
+.done-stat .dl{font-size:.6rem;color:var(--dim);text-transform:uppercase;letter-spacing:.08em;}
+
+/* QUIZ */
+.quiz-wrap{background:var(--ink2);border:1px solid var(--wire);border-radius:var(--r2);padding:22px;margin-bottom:18px;}
+.quiz-q{font-family:'Playfair Display',serif;font-size:1.4rem;color:var(--snow);text-align:center;margin-bottom:18px;}
+.quiz-opts{display:flex;flex-direction:column;gap:9px;}
+.quiz-opt{background:var(--ink3);border:1px solid var(--wire);border-radius:12px;padding:11px 16px;font-size:.8rem;color:var(--pale);cursor:pointer;transition:all .2s var(--ease);text-align:left;}
+.quiz-opt:hover:not([disabled]){background:var(--ink4);border-color:var(--wire2);}
+.quiz-opt.correct{background:rgba(80,200,176,.12);border-color:var(--teal);color:var(--teal);}
+.quiz-opt.wrong{background:rgba(224,112,128,.1);border-color:var(--rose);color:var(--rose);}
+.quiz-feedback{text-align:center;margin-top:14px;font-size:.78rem;color:var(--mid);min-height:22px;}
+
+/* STATS */
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:24px;}
+.stat-card{background:var(--ink2);border:1px solid var(--wire);border-radius:var(--r);padding:18px;display:flex;flex-direction:column;gap:4px;transition:.2s;}
+.stat-card:hover{border-color:var(--wire2);}
+.stat-num{font-family:'Playfair Display',serif;font-size:2rem;color:var(--snow);line-height:1;}
+.stat-label{font-size:.63rem;color:var(--dim);text-transform:uppercase;letter-spacing:.08em;}
+.stat-card.accent-lav .stat-num{color:var(--lav2);}
+.stat-card.accent-teal .stat-num{color:var(--teal);}
+.stat-card.accent-rose .stat-num{color:var(--rose);}
+.stat-card.accent-gold .stat-num{color:var(--gold);}
+.section-label{font-size:.78rem;font-weight:600;color:var(--mid);text-transform:uppercase;letter-spacing:.07em;margin-bottom:12px;}
+.prog-section{margin-bottom:20px;}
+.prog-row{display:flex;justify-content:space-between;font-size:.68rem;color:var(--dim);margin-bottom:6px;}
+.prog-row b{color:var(--pale);}
+.prog-bar{height:7px;background:var(--wire);border-radius:100px;overflow:hidden;margin-bottom:14px;}
+.prog-fill{height:100%;border-radius:100px;transition:width .6s var(--ease);}
+.fill-lav{background:linear-gradient(90deg,var(--lav3),var(--lav2));}
+.fill-teal{background:linear-gradient(90deg,#30a090,var(--teal));}
+.fill-gold{background:linear-gradient(90deg,var(--gold2),var(--gold));}
+.tag-list{display:flex;flex-direction:column;gap:7px;margin-bottom:20px;}
+.tag-row{background:var(--ink2);border:1px solid var(--wire);border-radius:var(--r);padding:13px 15px;display:flex;align-items:center;gap:12px;}
+.tag-name{flex:1;font-size:.76rem;color:var(--pale);font-weight:500;}
+.tag-bar-wrap{flex:2;height:4px;background:var(--wire);border-radius:100px;overflow:hidden;}
+.tag-bar-fill{height:100%;background:var(--lav2);border-radius:100px;transition:width .5s var(--ease);}
+.tag-frac{font-size:.63rem;color:var(--dim);min-width:46px;text-align:right;}
+.action-row{display:flex;gap:10px;flex-wrap:wrap;}
+
+/* STREAK */
+.streak-band{background:var(--ink2);border:1px solid var(--wire);border-radius:var(--r);padding:14px 16px;display:flex;align-items:center;gap:14px;margin-bottom:18px;}
+.streak-icon{font-size:1.5rem;line-height:1;}
+.streak-info{flex:1;}
+.streak-num{font-family:'Playfair Display',serif;font-size:1.3rem;color:var(--gold);}
+.streak-txt{font-size:.65rem;color:var(--dim);}
+
+/* EDIT MODAL */
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:500;align-items:center;justify-content:center;padding:20px;}
+.modal-bg.open{display:flex;}
+.modal{background:var(--ink2);border:1px solid var(--wire2);border-radius:var(--r2);padding:22px;width:100%;max-width:420px;animation:revealUp .22s ease;}
+.modal h3{font-family:'Playfair Display',serif;font-size:1.2rem;color:var(--snow);margin-bottom:14px;}
+.modal-footer{display:flex;gap:9px;justify-content:flex-end;margin-top:16px;}
+
+/* BOTTOM NAV */
+nav{
+  display:flex;padding:8px 4px;
+  padding-bottom:max(10px, var(--safe-bot));
+  border-top:1px solid var(--wire);
+  background:rgba(13,13,15,.95);
+  backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);
+  flex-shrink:0;z-index:190;
+}
+.nav-btn{
+  display:flex;flex-direction:column;align-items:center;gap:4px;
+  background:none;border:none;color:var(--dim);
+  font-family:'Sora',sans-serif;font-size:.58rem;font-weight:500;
+  padding:6px 8px;border-radius:12px;cursor:pointer;
+  transition:all .2s var(--ease);white-space:nowrap;flex:1;position:relative;
+}
+.nav-btn .nav-icon{width:24px;height:24px;display:flex;align-items:center;justify-content:center;}
+.nav-btn .nav-icon svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.6;transition:.2s;}
+.nav-btn:hover{color:var(--pale);}
+.nav-btn.active{color:var(--lav2);}
+.nav-btn.active .nav-icon svg{stroke:var(--lav2);}
+.nav-badge{background:var(--lav2);color:#fff;border-radius:100px;font-size:.5rem;padding:1px 5px;font-weight:700;position:absolute;top:2px;left:50%;transform:translateX(4px);line-height:1.5;}
+
+/* TOAST */
+.toast{
+  position:fixed;
+  left:50%;
+  bottom:calc(72px + var(--safe-bot) + 14px);
+  transform:translateX(-50%) translateY(16px);
+  background:var(--snow);
+  color:var(--ink);
+  font-size:.72rem;
+  font-weight:600;
+  padding:10px 22px;
+  border-radius:100px;
+  z-index:10000;
+  pointer-events:none;
+  white-space:nowrap;
+  box-shadow:0 8px 32px rgba(0,0,0,.5);
+  opacity:0;
+  transition:opacity .28s var(--ease), transform .28s var(--ease);
+}
+.toast.show{
+  opacity:1;
+  transform:translateX(-50%) translateY(0);
+}
+
+@media(max-width:480px){
+  .scroll-inner{padding:16px 12px calc(76px + var(--safe-bot));}
+  .page-title{font-size:1.5rem;}
+  .c-word{font-size:1.9rem;}
+  .card-3d{height:210px;}
+  .stats-grid{grid-template-columns:1fr 1fr;}
+  .upload-drop{padding:28px 16px;}
+  .pill{display:none;}
+}
+</style>
+</head>
+<body>
+<div class="glow-orb g1"></div>
+<div class="glow-orb g2"></div>
+
+<div class="app">
+<header>
+  <div class="brand">Le<em>xis</em></div>
+  <div class="header-pills">
+    <div class="pill"><span class="dot" id="hDot"></span> <b id="hTotal">0</b> үг</div>
+    <div class="pill">✓ <b id="hKnown">0</b> мэддэг</div>
+  </div>
+</header>
+
+<main id="mainScroll">
+<div class="scroll-inner">
+
+<!-- WORDS VIEW -->
+<div class="view active" id="view-words">
+  <div class="list-controls">
+    <div class="search-wrap">
+      <span class="search-icon"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg></span>
+      <input type="text" placeholder="Үг хайх..." id="searchInput" oninput="renderWords()">
+    </div>
+    <button class="sort-btn" id="sortBtn" onclick="cycleSort()">Шинэ→</button>
+    <button class="btn btn-ghost btn-sm" onclick="go('add',document.querySelectorAll('.nav-btn')[1])">+ Нэмэх</button>
+  </div>
+  <div class="filter-row">
+    <button class="chip active" onclick="setF('all',this)">Бүгд</button>
+    <button class="chip" onclick="setF('unknown',this)">Мэдэхгүй</button>
+    <button class="chip" onclick="setF('known',this)">Мэддэг ✓</button>
+    <button class="chip" onclick="setF('fav',this)">★ Тэмдэглэсэн</button>
+  </div>
+  <div class="word-grid" id="wordGrid"></div>
+</div>
+
+<!-- ADD VIEW -->
+<div class="view" id="view-add">
+  <div class="page-head">
+    <div class="page-title">Үг <em>нэмэх</em></div>
+    <div class="page-sub">Файлаас оруулах эсвэл гараар нэмнэ үү</div>
+  </div>
+  <div class="upload-section">
+    <div class="upload-drop" id="dropZone">
+      <input type="file" accept=".txt,.csv,.tsv" onchange="handleFile(event)" multiple>
+      <div class="upload-icon-big"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></div>
+      <div class="upload-cta">Файл чирж тавих эсвэл товших</div>
+      <div class="upload-hint">TXT · CSV · TSV дэмжинэ<br><b>Нэг дор олон файл</b> оруулж болно</div>
+    </div>
+    <div class="format-guide">
+      <div class="guide-header" onclick="toggleGuide(this)">
+        <div class="guide-title">📋 Файлын формат яаж бэлдэх вэ?</div>
+        <div class="guide-toggle">▾</div>
+      </div>
+      <div class="guide-body" id="guideBody">
+        <div class="format-row">
+          <div class="format-card">
+            <div class="format-label">TXT <span class="ext">.txt</span></div>
+            <div class="code-block"><span class="cm"># мөр бүр нэг үг</span>
+<span class="cv">abandon</span>, <span class="cs">орхих</span>, She abandoned it.
+<span class="cv">benevolent</span>, <span class="cs">сайн сэтгэлтэй</span></div>
+          </div>
+          <div class="format-card">
+            <div class="format-label">CSV <span class="ext">.csv</span></div>
+            <div class="code-block"><span class="cm"># таб эсвэл таслалаар</span>
+<span class="cv">serene</span>	<span class="cs">тайван</span>	Serene lake
+<span class="cv">vivid</span>	<span class="cs">тод</span>	Vivid colors</div>
+          </div>
+        </div>
+        <div class="guide-note"><b>Зөвлөгөө:</b> 4 багана: үг, утга, жишээ, ангилал (IELTS, GRE...). Excel → CSV-р хадгалж оруулна.</div>
+      </div>
+    </div>
+  </div>
+  <div class="or-divider">эсвэл гараар нэмэх</div>
+  <div class="add-form">
+    <div class="form-grid">
+      <div class="field"><label>Үг / Хэллэг <span>*</span></label><input type="text" id="fw" placeholder="ephemeral" autocorrect="off" spellcheck="false"></div>
+      <div class="field"><label>Монгол утга <span>*</span></label><input type="text" id="fd" placeholder="богино хугацааны"></div>
+      <div class="field full"><label>Жишээ өгүүлбэр</label><textarea id="fn" placeholder="Youth is ephemeral — treasure every moment."></textarea></div>
+      <div class="field"><label>Ангилал / Шошго</label><input type="text" id="ft" placeholder="IELTS, GRE, Өдөр тутам..."></div>
+      <div class="field"><label>Түвшин</label>
+        <select id="flv">
+          <option value="">— сонгох —</option>
+          <option value="easy">Хялбар</option>
+          <option value="medium">Дунд</option>
+          <option value="hard">Хэцүү</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-footer">
+      <button class="btn btn-ghost" onclick="clearForm()">Цэвэрлэх</button>
+      <button class="btn btn-primary" onclick="addWord()">✦ Нэмэх</button>
+    </div>
+  </div>
+</div>
+
+<!-- STUDY VIEW -->
+<div class="view" id="view-study">
+  <div id="studyEmpty" class="empty-state" style="display:none">
+    <div class="e-icon"><svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg></div>
+    <h3 id="emptyTitle">Үг байхгүй байна</h3>
+    <p id="emptyText">Эхлээд үгс нэмнэ үү.</p>
+  </div>
+  <div id="studyDone" class="study-done" style="display:none">
+    <div class="done-circle"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
+    <h2>Гайхалтай!</h2>
+    <p>Бүх үгийг давтлаа.<br>Чи маш сайн байна! 🎉</p>
+    <div class="done-stats" id="doneStats"></div>
+    <button class="btn btn-primary" onclick="restartStudy()">↺ Дахин эхлэх</button>
+  </div>
+  <div id="studyMain">
+    <div class="card-mode-select">
+      <button class="mode-btn active" onclick="setMode('unknown',this)">Мэдэхгүй</button>
+      <button class="mode-btn" onclick="setMode('all',this)">Бүгд</button>
+      <button class="mode-btn" onclick="setMode('fav',this)">★ Тэмдэглэсэн</button>
+      <button class="mode-btn" onclick="setMode('hard',this)">Хэцүү</button>
+      <button class="mode-btn" onclick="setMode('quiz',this)">🎯 Quiz</button>
+    </div>
+    <!-- FLASHCARD -->
+    <div id="studyFlash">
+      <div class="study-header">
+        <div class="study-progress-wrap">
+          <div class="study-label"><span id="cIdx">0</span> / <span id="cTot">0</span> — <span id="cSession">0 мэддэг болсон</span></div>
+          <div class="study-progress-bar"><div class="study-progress-fill" id="cProgFill" style="width:0%"></div></div>
+        </div>
+      </div>
+      <div class="card-arena" onclick="flipCard()">
+        <div class="card-3d" id="card3d">
+          <div class="c-face front">
+            <div class="c-category" id="cTag"></div>
+            <div class="c-word" id="cWord">—</div>
+            <div class="c-phonetic" id="cPhon"></div>
+            <div class="flip-prompt">товшиж нөгөө талыг харах</div>
+          </div>
+          <div class="c-face back">
+            <div class="c-category">Тайлбар</div>
+            <div class="c-def" id="cDef">—</div>
+            <div class="c-eg" id="cEg" style="display:none"></div>
+            <div class="c-tap-hint">буцаах</div>
+          </div>
+        </div>
+      </div>
+      <div class="answer-row">
+        <button class="btn btn-wrong" onclick="answer(false)">✕ Мэдэхгүй</button>
+        <button class="btn btn-ghost btn-sm" onclick="skipCard()">→ Алгасах</button>
+        <button class="btn btn-right" onclick="answer(true)">✓ Мэддэг</button>
+      </div>
+    </div>
+    <!-- QUIZ -->
+    <div id="studyQuiz" style="display:none">
+      <div class="study-header">
+        <div class="study-progress-wrap">
+          <div class="study-label"><span id="qIdx">0</span> / <span id="qTot">0</span> — <span id="qScore">0 зөв</span></div>
+          <div class="study-progress-bar"><div class="study-progress-fill" id="qProgFill" style="width:0%"></div></div>
+        </div>
+      </div>
+      <div class="quiz-wrap">
+        <div class="quiz-q" id="quizWord">—</div>
+        <div class="quiz-opts" id="quizOpts"></div>
+        <div class="quiz-feedback" id="quizFb"></div>
+      </div>
+      <div class="answer-row">
+        <button class="btn btn-ghost btn-sm" id="quizNext" onclick="nextQuiz()" style="display:none">Дараах →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- STATS VIEW -->
+<div class="view" id="view-stats">
+  <div class="page-head">
+    <div class="page-title">Сурлагын <em>явц</em></div>
+    <div class="page-sub">Дэвшлээ хянах</div>
+  </div>
+  <div id="streakBand"></div>
+  <div class="stats-grid" id="statsGrid"></div>
+  <div class="prog-section" id="progSection"></div>
+  <div class="section-label" style="margin-bottom:12px;">Ангилалаар</div>
+  <div class="tag-list" id="tagList"></div>
+  <div class="action-row">
+    <button class="btn btn-teal btn-sm" onclick="exportTxt()">⬇ Экспорт (.txt)</button>
+    <button class="btn btn-ghost btn-sm" onclick="exportJSON()">⬇ JSON</button>
+    <button class="btn btn-danger btn-sm" onclick="clearAll()">🗑 Бүгдийг устгах</button>
+  </div>
+</div>
+
+</div><!-- scroll-inner -->
+</main>
+
+<!-- BOTTOM NAV -->
+<nav>
+  <button class="nav-btn active" onclick="go('words',this)">
+    <span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg></span>
+    Үгс
+    <span class="nav-badge" id="navBadge" style="display:none">0</span>
+  </button>
+  <button class="nav-btn" onclick="go('add',this)">
+    <span class="nav-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg></span>
+    Нэмэх
+  </button>
+  <button class="nav-btn" onclick="go('study',this)">
+    <span class="nav-icon"><svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg></span>
+    Цээжлэх
+  </button>
+  <button class="nav-btn" onclick="go('stats',this)">
+    <span class="nav-icon"><svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></span>
+    Явц
+  </button>
+</nav>
+</div><!-- app -->
+
+<!-- EDIT MODAL -->
+<div class="modal-bg" id="editModal">
+  <div class="modal">
+    <h3>Үг засах</h3>
+    <div class="form-grid">
+      <div class="field"><label>Үг <span>*</span></label><input type="text" id="ew" autocorrect="off" spellcheck="false"></div>
+      <div class="field"><label>Утга <span>*</span></label><input type="text" id="ed"></div>
+      <div class="field full"><label>Жишээ</label><textarea id="en" style="min-height:56px;"></textarea></div>
+      <div class="field"><label>Шошго</label><input type="text" id="et"></div>
+      <div class="field"><label>Түвшин</label>
+        <select id="elv">
+          <option value="">—</option>
+          <option value="easy">Хялбар</option>
+          <option value="medium">Дунд</option>
+          <option value="hard">Хэцүү</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal()">Болих</button>
+      <button class="btn btn-primary" onclick="saveEdit()">Хадгалах</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── ZOOM DISABLE ──
+document.addEventListener('touchstart', function(e) {
+  if (e.touches.length > 1) e.preventDefault();
+}, { passive: false });
+
+let lastTouchEnd = 0;
+document.addEventListener('touchend', function(e) {
+  const now = Date.now();
+  if (now - lastTouchEnd < 300) e.preventDefault();
+  lastTouchEnd = now;
+}, { passive: false });
+
+document.addEventListener('gesturestart',  function(e){ e.preventDefault(); }, { passive: false });
+document.addEventListener('gesturechange', function(e){ e.preventDefault(); }, { passive: false });
+document.addEventListener('gestureend',    function(e){ e.preventDefault(); }, { passive: false });
+
+// ── STATE ──
+let W = JSON.parse(localStorage.getItem('lexis_v3') || '[]');
+let filter = 'all';
+let sortMode = 'date';
+let studyQ = [], sIdx = 0, sFlipped = false, sSessionKnown = 0, sSessionWrong = 0, studyMode = 'unknown';
+let quizQ = [], qIdx = 0, qScore = 0, qAnswered = false;
+let editIdx = -1;
+let streak = parseInt(localStorage.getItem('lexis_streak') || '0');
+let lastStudyDate = localStorage.getItem('lexis_last_study') || '';
+
+const save = () => { localStorage.setItem('lexis_v3', JSON.stringify(W)); updateHeader(); };
+const esc = s => String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+const shuffle = arr => { for (let i = arr.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i+1)); [arr[i], arr[j]] = [arr[j], arr[i]]; } };
+
+// ── HEADER ──
+function updateHeader() {
+  const total = W.length, known = W.filter(w => w.known).length;
+  document.getElementById('hTotal').textContent = total;
+  document.getElementById('hKnown').textContent = known;
+  document.getElementById('hDot').className = 'dot' + (total > 0 ? '' : ' off');
+  const badge = document.getElementById('navBadge');
+  badge.textContent = total;
+  badge.style.display = total > 0 ? 'inline' : 'none';
+}
+
+// ── NAVIGATION ──
+function go(name, el) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('view-' + name).classList.add('active');
+  el.classList.add('active');
+  document.getElementById('mainScroll').scrollTop = 0;
+  if (name === 'words') renderWords();
+  if (name === 'study') initStudy();
+  if (name === 'stats') renderStats();
+}
+
+// ── FILTER & SORT ──
+function setF(f, el) {
+  filter = f;
+  document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  renderWords();
+}
+
+const SORT_MODES = ['date','az','za','known'];
+const SORT_LABELS = ['Шинэ→','A–Z','Z–A','Мэддэг'];
+let sortModeIdx = 0;
+function cycleSort() {
+  sortModeIdx = (sortModeIdx + 1) % SORT_MODES.length;
+  sortMode = SORT_MODES[sortModeIdx];
+  document.getElementById('sortBtn').textContent = SORT_LABELS[sortModeIdx];
+  renderWords();
+}
+
+function getSorted(list) {
+  if (sortMode === 'az') return [...list].sort((a,b) => a.word.localeCompare(b.word));
+  if (sortMode === 'za') return [...list].sort((a,b) => b.word.localeCompare(a.word));
+  if (sortMode === 'known') return [...list].sort((a,b) => (b.known?1:0)-(a.known?1:0));
+  return list;
+}
+
+// ── RENDER WORDS ──
+function renderWords() {
+  const q = (document.getElementById('searchInput').value || '').toLowerCase();
+  let list = W.filter(w => {
+    const m = w.word.toLowerCase().includes(q) || w.def.toLowerCase().includes(q) || (w.tag||'').toLowerCase().includes(q);
+    if (filter === 'known') return m && w.known;
+    if (filter === 'unknown') return m && !w.known;
+    if (filter === 'fav') return m && w.fav;
+    return m;
+  });
+  list = getSorted(list);
+  const grid = document.getElementById('wordGrid');
+  if (!list.length) {
+    grid.innerHTML = `<div class="empty-state"><div class="e-icon"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg></div><h3>Олдсонгүй</h3><p>${W.length===0?'Үг нэмж эхэлнэ үү.':'Хайлтад тохирох үг байхгүй.'}</p></div>`;
+    return;
+  }
+  grid.innerHTML = list.map(w => {
+    const ri = W.indexOf(w);
+    const lvlLabel = w.level === 'easy' ? 'Хялбар' : w.level === 'medium' ? 'Дунд' : w.level === 'hard' ? 'Хэцүү' : '';
+    return `<div class="word-card ${w.known?'is-known':''} ${w.fav?'is-fav':''}">
+      <button class="known-toggle" onclick="toggleKnown(${ri})">
+        <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+      </button>
+      <div class="word-body">
+        <div class="word-term">${esc(w.word)}</div>
+        <div class="word-def">${esc(w.def)}</div>
+        ${w.eg ? `<div class="word-eg">${esc(w.eg)}</div>` : ''}
+        <div class="meta-row">
+          ${w.tag ? `<span class="meta-chip">${esc(w.tag)}</span>` : ''}
+          ${lvlLabel ? `<span class="meta-chip lvl-${w.level}">${lvlLabel}</span>` : ''}
+          ${w.fav ? `<span class="meta-chip fav-chip">★</span>` : ''}
+        </div>
+      </div>
+      <div class="word-acts">
+        <button class="ico-btn ${w.fav?'fav-on':''}" onclick="toggleFav(${ri})" title="Тэмдэглэх">
+          <svg viewBox="0 0 24 24" fill="${w.fav?'currentColor':'none'}"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        </button>
+        <button class="ico-btn" onclick="openEdit(${ri})" title="Засах">
+          <svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+        </button>
+        <button class="ico-btn del" onclick="delWord(${ri})" title="Устгах">
+          <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── ADD / EDIT / DELETE ──
+function addWord() {
+  const word = document.getElementById('fw').value.trim();
+  const def  = document.getElementById('fd').value.trim();
+  const eg   = document.getElementById('fn').value.trim();
+  const tag  = document.getElementById('ft').value.trim();
+  const level= document.getElementById('flv').value;
+  if (!word || !def) { toast('Үг болон утга оруулна уу'); return; }
+  if (W.find(w => w.word.toLowerCase() === word.toLowerCase())) { toast('⚠ Энэ үг аль хэдийн байна'); return; }
+  W.unshift({ word, def, eg, tag, level, known: false, fav: false, id: Date.now() });
+  save(); clearForm(); toast('✦ "' + word + '" нэмэгдлээ');
+}
+function clearForm() {
+  ['fw','fd','fn','ft'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('flv').value = '';
+}
+function delWord(i) {
+  if (!confirm('"' + W[i].word + '" устгах уу?')) return;
+  W.splice(i, 1); save(); renderWords();
+}
+function toggleKnown(i) { W[i].known = !W[i].known; save(); renderWords(); }
+function toggleFav(i) { W[i].fav = !W[i].fav; save(); renderWords(); }
+
+function openEdit(i) {
+  editIdx = i; const w = W[i];
+  document.getElementById('ew').value = w.word;
+  document.getElementById('ed').value = w.def;
+  document.getElementById('en').value = w.eg || '';
+  document.getElementById('et').value = w.tag || '';
+  document.getElementById('elv').value = w.level || '';
+  document.getElementById('editModal').classList.add('open');
+}
+function closeModal() { document.getElementById('editModal').classList.remove('open'); editIdx = -1; }
+function saveEdit() {
+  if (editIdx < 0) return;
+  const word = document.getElementById('ew').value.trim();
+  const def  = document.getElementById('ed').value.trim();
+  if (!word || !def) { toast('Үг болон утга оруулна уу'); return; }
+  W[editIdx] = { ...W[editIdx], word, def,
+    eg: document.getElementById('en').value.trim(),
+    tag: document.getElementById('et').value.trim(),
+    level: document.getElementById('elv').value
+  };
+  save(); closeModal(); renderWords(); toast('✓ Засагдлаа');
+}
+
+document.getElementById('editModal').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+
+// ── FILE IMPORT ──
+const dz = document.getElementById('dropZone');
+dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('drag'); });
+dz.addEventListener('dragleave', () => dz.classList.remove('drag'));
+dz.addEventListener('drop', e => { e.preventDefault(); dz.classList.remove('drag'); [...e.dataTransfer.files].forEach(readFile); });
+function handleFile(e) { [...e.target.files].forEach(readFile); e.target.value = ''; }
+function readFile(file) { const r = new FileReader(); r.onload = e => parseText(e.target.result); r.readAsText(file, 'UTF-8'); }
+function parseText(text) {
+  const lines = text.split(/\r?\n/).filter(l => l.trim());
+  let added = 0, skipped = 0;
+  const hp = /^(word|үг|term|front|english|монгол|definition|def|meaning)/i;
+  lines.forEach(line => {
+    if (hp.test(line.trim())) return;
+    let p = line.split('\t');
+    if (p.length < 2) p = line.split(/,(?=(?:[^"]*"[^"]*")*[^"]*$)/);
+    p = p.map(x => x.trim().replace(/^["']|["']$/g, ''));
+    if (p.length >= 2 && p[0] && p[1]) {
+      if (!W.find(w => w.word.toLowerCase() === p[0].toLowerCase())) {
+        W.push({ word:p[0], def:p[1], eg:p[2]||'', tag:p[3]||'', level:'', known:false, fav:false, id:Date.now()+Math.random() });
+        added++;
+      } else skipped++;
+    }
+  });
+  save(); renderWords();
+  toast(skipped > 0 ? `✓ ${added} нэмэгдлээ · ${skipped} давхардал` : `✓ ${added} үг нэмэгдлээ`);
+}
+function toggleGuide(header) {
+  header.classList.toggle('open');
+  document.getElementById('guideBody').classList.toggle('open');
+}
+
+// ── STUDY ──
+function setMode(m, el) {
+  studyMode = m;
+  document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  initStudy();
+}
+
+function initStudy() {
+  sIdx = 0; sFlipped = false; sSessionKnown = 0; sSessionWrong = 0;
+  const empty = document.getElementById('studyEmpty');
+  const done  = document.getElementById('studyDone');
+  const main  = document.getElementById('studyMain');
+
+  if (studyMode === 'quiz') {
+    document.getElementById('studyFlash').style.display = 'none';
+    document.getElementById('studyQuiz').style.display = '';
+    empty.style.display = 'none'; done.style.display = 'none'; main.style.display = '';
+    initQuiz(); return;
+  }
+
+  document.getElementById('studyFlash').style.display = '';
+  document.getElementById('studyQuiz').style.display = 'none';
+
+  if (studyMode === 'unknown') studyQ = W.filter(w => !w.known);
+  else if (studyMode === 'fav')  studyQ = W.filter(w => w.fav);
+  else if (studyMode === 'hard') studyQ = W.filter(w => w.level === 'hard');
+  else studyQ = [...W];
+  shuffle(studyQ);
+
+  if (W.length === 0) {
+    empty.style.display=''; done.style.display='none'; main.style.display='none';
+    document.getElementById('emptyTitle').textContent = 'Үг байхгүй байна';
+    document.getElementById('emptyText').textContent = 'Эхлээд үгс нэмнэ үү.'; return;
+  }
+  if (studyQ.length === 0) {
+    empty.style.display=''; done.style.display='none'; main.style.display='none';
+    document.getElementById('emptyTitle').textContent = 'Энэ ангилалд үг байхгүй';
+    document.getElementById('emptyText').textContent = 'Өөр горим сонгоно уу.'; return;
+  }
+  empty.style.display='none'; done.style.display='none'; main.style.display='';
+  showCard();
+}
+
+function showCard() {
+  if (sIdx >= studyQ.length) {
+    updateStreak();
+    document.getElementById('studyMain').style.display = 'none';
+    document.getElementById('studyDone').style.display = '';
+    document.getElementById('doneStats').innerHTML = `
+      <div class="done-stat"><div class="dn">${sSessionKnown}</div><div class="dl">Мэддэг</div></div>
+      <div class="done-stat"><div class="dn">${sSessionWrong}</div><div class="dl">Мэдэхгүй</div></div>
+      <div class="done-stat"><div class="dn">${studyQ.length}</div><div class="dl">Нийт</div></div>`;
+    return;
+  }
+  const w = studyQ[sIdx];
+  document.getElementById('cWord').textContent = w.word;
+  document.getElementById('cDef').textContent  = w.def;
+  document.getElementById('cTag').textContent  = w.tag || '';
+  const eg = document.getElementById('cEg');
+  if (w.eg) { eg.textContent = w.eg; eg.style.display = ''; } else eg.style.display = 'none';
+  document.getElementById('card3d').classList.remove('flipped');
+  sFlipped = false;
+  const pct = studyQ.length ? sIdx / studyQ.length * 100 : 0;
+  document.getElementById('cProgFill').style.width = pct + '%';
+  document.getElementById('cIdx').textContent     = sIdx + 1;
+  document.getElementById('cTot').textContent     = studyQ.length;
+  document.getElementById('cSession').textContent = sSessionKnown + ' мэддэг болсон';
+}
+function flipCard() { sFlipped = !sFlipped; document.getElementById('card3d').classList.toggle('flipped', sFlipped); }
+function answer(correct) {
+  const w = studyQ[sIdx]; const ri = W.findIndex(x => x.id === w.id);
+  if (ri >= 0) W[ri].known = correct;
+  if (correct) sSessionKnown++; else sSessionWrong++;
+  save(); sIdx++; showCard();
+}
+function skipCard() { sIdx++; showCard(); }
+function restartStudy() { document.getElementById('studyDone').style.display = 'none'; initStudy(); }
+
+// ── QUIZ ──
+function initQuiz() {
+  if (W.length < 4) { toast('Quiz-д хамгийн багадаа 4 үг хэрэгтэй'); return; }
+  quizQ = [...W]; shuffle(quizQ); qIdx = 0; qScore = 0;
+  document.getElementById('qTot').textContent = quizQ.length;
+  showQuiz();
+}
+function showQuiz() {
+  if (qIdx >= quizQ.length) {
+    updateStreak();
+    document.getElementById('studyMain').style.display = 'none';
+    document.getElementById('studyDone').style.display = '';
+    document.getElementById('doneStats').innerHTML = `
+      <div class="done-stat"><div class="dn">${qScore}</div><div class="dl">Зөв</div></div>
+      <div class="done-stat"><div class="dn">${quizQ.length-qScore}</div><div class="dl">Буруу</div></div>
+      <div class="done-stat"><div class="dn">${Math.round(qScore/quizQ.length*100)}%</div><div class="dl">Оноо</div></div>`;
+    return;
+  }
+  qAnswered = false;
+  document.getElementById('quizNext').style.display = 'none';
+  document.getElementById('quizFb').textContent = '';
+  document.getElementById('qIdx').textContent = qIdx + 1;
+  document.getElementById('qScore').textContent = qScore + ' зөв';
+  document.getElementById('qProgFill').style.width = (qIdx / quizQ.length * 100) + '%';
+
+  const correct = quizQ[qIdx];
+  document.getElementById('quizWord').textContent = correct.word;
+
+  const pool = W.filter(w => w.id !== correct.id);
+  shuffle(pool);
+  let opts = [correct, ...pool.slice(0,3)];
+  shuffle(opts);
+
+  document.getElementById('quizOpts').innerHTML = opts.map(o =>
+    `<button class="quiz-opt" data-id="${o.id}" onclick="answerQuiz(this,'${o.id}','${correct.id}')">${esc(o.def)}</button>`
+  ).join('');
+}
+function answerQuiz(btn, chosen, correct) {
+  if (qAnswered) return; qAnswered = true;
+  document.querySelectorAll('.quiz-opt').forEach(o => {
+    o.disabled = true;
+    if (o.dataset.id === correct) o.classList.add('correct');
+    else if (o === btn) o.classList.add('wrong');
+  });
+  const ok = chosen === correct;
+  if (ok) { qScore++; document.getElementById('quizFb').textContent = '✓ Зөв!'; }
+  else { document.getElementById('quizFb').textContent = '✕ Буруу байна'; }
+  document.getElementById('quizNext').style.display = '';
+}
+function nextQuiz() { qIdx++; showQuiz(); }
+
+// ── STREAK ──
+function updateStreak() {
+  const today = new Date().toDateString();
+  if (lastStudyDate !== today) {
+    const yesterday = new Date(Date.now() - 86400000).toDateString();
+    streak = lastStudyDate === yesterday ? streak + 1 : 1;
+    lastStudyDate = today;
+    localStorage.setItem('lexis_streak', streak);
+    localStorage.setItem('lexis_last_study', today);
+  }
+}
+
+// ── STATS ──
+function renderStats() {
+  const total   = W.length;
+  const known   = W.filter(w => w.known).length;
+  const unknown = total - known;
+  const favs    = W.filter(w => w.fav).length;
+
+  document.getElementById('streakBand').innerHTML = streak > 0
+    ? `<div class="streak-band"><div class="streak-icon">🔥</div><div class="streak-info"><div class="streak-num">${streak} өдөр</div><div class="streak-txt">Дараалсан давтлага хийсэн</div></div></div>`
+    : '';
+
+  document.getElementById('statsGrid').innerHTML = `
+    <div class="stat-card"><div class="stat-num">${total}</div><div class="stat-label">Нийт үг</div></div>
+    <div class="stat-card accent-lav"><div class="stat-num">${total ? Math.round(known/total*100) : 0}%</div><div class="stat-label">Амжилт</div></div>
+    <div class="stat-card accent-teal"><div class="stat-num">${known}</div><div class="stat-label">Мэддэг</div></div>
+    <div class="stat-card accent-rose"><div class="stat-num">${unknown}</div><div class="stat-label">Мэдэхгүй</div></div>
+    <div class="stat-card accent-gold"><div class="stat-num">${favs}</div><div class="stat-label">Тэмдэглэсэн ★</div></div>`;
+
+  document.getElementById('progSection').innerHTML = `
+    <div class="prog-row"><span>Нийт үг</span><b>${total}</b></div>
+    <div class="prog-bar"><div class="prog-fill fill-lav" style="width:${total>0?100:0}%"></div></div>
+    <div class="prog-row"><span>Мэддэг болсон</span><b>${known}</b></div>
+    <div class="prog-bar"><div class="prog-fill fill-teal" style="width:${total ? known/total*100 : 0}%"></div></div>
+    <div class="prog-row"><span>Тэмдэглэсэн</span><b>${favs}</b></div>
+    <div class="prog-bar"><div class="prog-fill fill-gold" style="width:${total ? favs/total*100 : 0}%"></div></div>`;
+
+  const tags = {};
+  W.forEach(w => { const t = w.tag || '—'; if (!tags[t]) tags[t] = {t:0,k:0}; tags[t].t++; if (w.known) tags[t].k++; });
+  document.getElementById('tagList').innerHTML = Object.entries(tags).length
+    ? Object.entries(tags).sort((a,b) => b[1].t - a[1].t).map(([tag,d]) =>
+        `<div class="tag-row">
+          <div class="tag-name">${esc(tag)}</div>
+          <div class="tag-bar-wrap"><div class="tag-bar-fill" style="width:${d.t ? d.k/d.t*100 : 0}%"></div></div>
+          <div class="tag-frac">${d.k}/${d.t}</div>
+        </div>`).join('')
+    : '<div style="color:var(--dim);font-size:.74rem;">Үг байхгүй</div>';
+}
+
+// ── EXPORT ──
+function exportTxt() {
+  const txt = W.map(w => [w.word, w.def, w.eg, w.tag, w.level].join('\t')).join('\n');
+  const a = document.createElement('a');
+  a.href = 'data:text/plain;charset=utf-8,' + encodeURIComponent(txt);
+  a.download = 'lexis_' + new Date().toISOString().slice(0,10) + '.txt';
+  a.click();
+  setTimeout(() => toast('⬇ Экспорт амжилттай'), 100);
+}
+function exportJSON() {
+  const a = document.createElement('a');
+  a.href = 'data:application/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(W, null, 2));
+  a.download = 'lexis_' + new Date().toISOString().slice(0,10) + '.json';
+  a.click();
+  setTimeout(() => toast('⬇ JSON экспорт амжилттай'), 100);
+}
+function clearAll() {
+  if (!confirm('Бүх үгийг устгах уу? Энэ үйлдлийг буцааж болохгүй.')) return;
+  W = []; save(); renderWords(); toast('🗑 Бүгд устгагдлаа');
+}
+
+// ── TOAST ──
+let toastTimer = null;
+function toast(msg) {
+  const t = document.getElementById('toast');
+  // Remove show first to reset animation
+  t.classList.remove('show');
+  t.textContent = msg;
+  // Force reflow so transition fires fresh
+  void t.offsetHeight;
+  t.classList.add('show');
+  if (toastTimer) clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => {
+    t.classList.remove('show');
+    toastTimer = null;
+  }, 2600);
+}
+
+// ── KEYBOARD SHORTCUTS ──
+document.addEventListener('keydown', e => {
+  const flashVisible = document.getElementById('studyFlash').style.display !== 'none'
+    && document.getElementById('view-study').classList.contains('active')
+    && document.getElementById('studyMain').style.display !== 'none';
+  if (!flashVisible) return;
+  if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); flipCard(); }
+  if (e.key === 'ArrowRight' || e.key === 'l') answer(true);
+  if (e.key === 'ArrowLeft'  || e.key === 'j') answer(false);
+  if (e.key === 'ArrowDown'  || e.key === 'k') skipCard();
+});
+
+// ── SERVICE WORKER (offline support) ──
+if ('serviceWorker' in navigator) {
+  const sw = `self.addEventListener('install',()=>self.skipWaiting());self.addEventListener('fetch',e=>e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request))));`;
+  navigator.serviceWorker.register(URL.createObjectURL(new Blob([sw],{type:'application/javascript'}))).catch(()=>{});
+}
+
+// ── INIT ──
+updateHeader();
+renderWords();
+</script>
+</body>
+</html>
